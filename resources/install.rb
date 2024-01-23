@@ -56,9 +56,14 @@ action_class do
   def do_repository_action(resource_action)
     case node['platform_family']
     when 'rhel', 'fedora', 'amazon'
+      if node['platform_family'] == 'rhel' and node['platform_version'].to_i == 7
+        release = node['platform_version'].to_i # moved from '7Server' to '7'
+      else
+        release = '$releasever'
+      end
       yum_repository 'hashicorp' do
         description 'Hashicorp Stable - $basearch'
-        baseurl "https://rpm.releases.hashicorp.com/#{vault_repo_platform}/$releasever/$basearch/stable"
+        baseurl "https://rpm.releases.hashicorp.com/#{vault_repo_platform}/#{release}/$basearch/stable"
         enabled true
         gpgcheck true
         gpgkey 'https://rpm.releases.hashicorp.com/gpg'
@@ -68,7 +73,7 @@ action_class do
 
       yum_repository 'hashicorp-test' do
         description 'Hashicorp Test - $basearch'
-        baseurl "https://rpm.releases.hashicorp.com/#{vault_repo_platform}/$releasever/$basearch/test"
+        baseurl "https://rpm.releases.hashicorp.com/#{vault_repo_platform}/#{release}/$basearch/test"
         enabled new_resource.test_repo
         gpgcheck true
         gpgkey 'https://rpm.releases.hashicorp.com/gpg'
